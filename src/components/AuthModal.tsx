@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useContext } from 'react';
+import { useContext } from "react";
 
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import AuthModalContext from '@/context/AuthModalContext';
-import { Button } from './ui/button';
-import { useForm } from 'react-hook-form';
+} from "@/components/ui/dialog";
+import AuthModalContext from "@/context/AuthModalContext";
+import { Button } from "./ui/button";
+import { useForm } from "react-hook-form";
 import {
   FormField,
   FormItem,
@@ -19,10 +19,13 @@ import {
   FormDescription,
   FormMessage,
   Form,
-} from './ui/form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Input } from './ui/input';
+} from "./ui/form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Input } from "./ui/input";
+import { registerWithEmailAndPasword } from "@/actions/supabase";
+import { Provider } from "@supabase/supabase-js";
+import { supabaseBrowserClient } from "@/utils/supabaseClient";
 
 const AuthModal = () => {
   const { isAuthModalOpen, toggleAuthModal } = useContext(AuthModalContext);
@@ -31,44 +34,52 @@ const AuthModal = () => {
     email: z
       .string()
       .email()
-      .min(5, { message: 'Job title must be at least 2 characters' }),
-    password: z
-      .string()
-      .min(3, { message: 'Password must at least be 3 characters' }),
+      .min(5, { message: "Job title must be at least 2 characters" }),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {}
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const response = await registerWithEmailAndPasword(values);
+    const { error, data } = JSON.parse(response as string);
+  }
 
-  async function githubAuth() {}
+  const socialAuth = async (provider: Provider) => {
+    const response = await supabaseBrowserClient.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${location.origin}/auth/callback`,
+      },
+    });
+
+    const { error, data } = response;
+  };
 
   return (
     <Dialog open={isAuthModalOpen} onOpenChange={toggleAuthModal}>
-      <DialogContent className='bg-black border-neutral-500'>
-        <DialogHeader className='text-white'>
+      <DialogContent className="bg-black border-neutral-500">
+        <DialogHeader className="text-white">
           <DialogTitle>Authenticate</DialogTitle>
         </DialogHeader>
 
-        <Button>GOOGLE</Button>
-        <Button onClick={githubAuth}>GITHUB</Button>
+        <Button onClick={socialAuth.bind(this, "google")}>GOOGLE</Button>
+        <Button onClick={socialAuth.bind(this, "github")}>GITHUB</Button>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
-              name='email'
+              name="email"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder='email' {...field} />
+                    <Input placeholder="email" {...field} />
                   </FormControl>
                   <FormDescription>Please enter your email</FormDescription>
                   <FormMessage />
@@ -76,22 +87,7 @@ const AuthModal = () => {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name='password'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input placeholder='password' {...field} />
-                  </FormControl>
-                  <FormDescription>Min 3 characters</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button type='submit'>Submit</Button>
+            <Button type="submit">Submit</Button>
           </form>
         </Form>
       </DialogContent>

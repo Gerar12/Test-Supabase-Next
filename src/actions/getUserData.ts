@@ -1,4 +1,4 @@
-import { User } from '@/types/app';
+import { User } from "@/types/app";
 
 const getUserData = async (): Promise<User | null> => {};
 

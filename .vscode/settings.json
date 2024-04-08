@@ -5,8 +5,10 @@
     "lucide",
     "nextjs",
     "Pasword",
+    "plpgsql",
     "setis",
     "Singnout",
-    "tailwindcss"
+    "tailwindcss",
+    "uuid"
   ]
 }

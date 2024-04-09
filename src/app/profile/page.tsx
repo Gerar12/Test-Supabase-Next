@@ -3,6 +3,7 @@ import getUserData from "@/actions/getUserData";
 import { getUserImage } from "@/actions/getUserImage";
 import { Button } from "@/components/ui/button";
 import { updateSkill } from "@/actions/updateUserSkill";
+import { revalidatePath } from "next/cache";
 
 const Profile = async () => {
   const userData = await getUserData();
@@ -13,8 +14,17 @@ const Profile = async () => {
 
     const skill = formData.get("skill");
     if (!skill) return;
-    await updateSkill(userData?.id as string, skill as string);
+    const [formResponse, formError] = await updateSkill(
+      userData?.id as string,
+      skill as string
+    );
+    if (formError) console.log(formError);
+
+    console.log(formResponse);
+    revalidatePath("/profile");
   };
+
+  console.log(userData);
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -60,11 +70,11 @@ const Profile = async () => {
                   Skills
                 </span>
                 <ul>
-                  <li className="mb-2">JavaScript</li>
-                  <li className="mb-2">React</li>
-                  <li className="mb-2">Node.js</li>
-                  <li className="mb-2">HTML/CSS</li>
-                  <li className="mb-2">Tailwind CSS</li>
+                  {userData?.skills.map((item) => (
+                    <>
+                      <li className="mb-2">{item}</li>
+                    </>
+                  ))}
                 </ul>
               </div>
             </div>

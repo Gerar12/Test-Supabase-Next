@@ -15,18 +15,27 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          job_title: string | null
+          logo: string | null
+          skills: string[] | null
         }
         Insert: {
           avatar_url?: string | null
           email: string
           full_name?: string | null
           id: string
+          job_title?: string | null
+          logo?: string | null
+          skills?: string[] | null
         }
         Update: {
           avatar_url?: string | null
           email?: string
           full_name?: string | null
           id?: string
+          job_title?: string | null
+          logo?: string | null
+          skills?: string[] | null
         }
         Relationships: [
           {
@@ -43,7 +52,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_skill: {
+        Args: {
+          user_id: string
+          new_skill: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
